@@ -5,13 +5,15 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from './firebase';
 import api from './api/client';
 import { TimerProvider } from './context/TimerContext';
+import { useTheme } from './context/ThemeContext';
 import Timer from './components/Timer';
 import Login from './components/Login';
 import Leaderboard from './components/Leaderboard';
 import Profile from './components/Profile';
 
 function App() {
-  const [user] = useAuthState(auth);
+  const [user, loading] = useAuthState(auth);
+  const { theme, toggleTheme } = useTheme();
 
   // Ensure user exists in backend (create if missing, e.g. after sign-in or DB reset)
   useEffect(() => {
@@ -22,6 +24,14 @@ function App() {
     }).catch(() => { /* ignore; user may be created later on profile save */ });
   }, [user?.uid, user?.email]);
 
+  if (loading) {
+    return (
+      <div className="app-layout">
+        <p className="app-loading">Загрузка...</p>
+      </div>
+    );
+  }
+
   return (
     <Router>
       <div className="app-layout">
@@ -31,6 +41,15 @@ function App() {
             <Link to="/" className="nav__link">Таймер</Link>
             <Link to="/leaderboard" className="nav__link">Лидерборд</Link>
             <Link to="/profile" className="nav__link">Никнейм</Link>
+            <button
+              type="button"
+              className="btn btn--ghost"
+              onClick={toggleTheme}
+              title={theme === 'light' ? 'Тёмная тема' : 'Светлая тема'}
+              aria-label={theme === 'light' ? 'Тёмная тема' : 'Светлая тема'}
+            >
+              {theme === 'light' ? '🌙' : '☀️'}
+            </button>
             <button
               type="button"
               className="btn btn--ghost"

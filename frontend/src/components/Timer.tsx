@@ -19,10 +19,12 @@ const Timer: React.FC = () => {
     intervals,
     workMinutes,
     breakMinutes,
+    taskName,
     setTimeLeft,
     setIsRunning,
     setWorkMinutes,
     setBreakMinutes,
+    setTaskName,
     persistIntervals,
     registerCycleComplete,
   } = timer;
@@ -39,9 +41,9 @@ const Timer: React.FC = () => {
   const mountedRef = useRef(true);
   useEffect(() => {
     mountedRef.current = true;
-    const unregister = registerCycleComplete(({ isWork: completedIsWork, duration }) => {
+    const unregister = registerCycleComplete(({ isWork: completedIsWork, duration, taskName: name }) => {
       if (user?.uid) {
-        api.post('/api/sessions', { userId: user.uid, duration }).catch((err) => {
+        api.post('/api/sessions', { userId: user.uid, duration, taskName: name ?? '' }).catch((err) => {
           if (mountedRef.current) {
             setNotification({ message: err instanceof Error ? err.message : 'Не удалось сохранить сессию', type: 'error' });
           }
@@ -86,6 +88,15 @@ const Timer: React.FC = () => {
   return (
     <div className="card">
       <p className="timer-label">{isWork ? 'Работа' : 'Перерыв'}</p>
+      <input
+        type="text"
+        value={taskName}
+        onChange={(e) => setTaskName(e.target.value)}
+        placeholder="Название задачи (необязательно)"
+        className="input"
+        style={{ marginBottom: 16, maxWidth: '100%' }}
+        maxLength={200}
+      />
       <div className="timer-display">
         {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
       </div>

@@ -62,11 +62,7 @@ const Leaderboard: React.FC = () => {
           <button
             key={p}
             type="button"
-            className="btn"
-            style={{
-              background: period === p ? 'var(--color-primary)' : 'var(--color-surface-alt)',
-              color: period === p ? 'white' : 'var(--color-text)',
-            }}
+            className={`btn leaderboard-period-btn ${period === p ? 'leaderboard-period-btn--selected' : ''}`}
             onClick={() => setPeriod(p)}
           >
             {PERIOD_LABELS[p]}

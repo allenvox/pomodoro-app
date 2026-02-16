@@ -19,6 +19,10 @@
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
   --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --color-leaderboard-current-bg: var(--color-highlight);
+  --color-leaderboard-current-border: var(--color-accent);
+  --color-leaderboard-btn-active-bg: var(--color-primary);
+  --color-leaderboard-btn-active-text: #ffffff;
 }
 
 body {
@@ -53,6 +57,35 @@ body {
   width: 100%;
   text-align: center;
   margin-bottom: 8px;
+}
+
+.app-loading {
+  color: var(--color-text-muted);
+  font-size: 1.1rem;
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+  --color-bg: #0f172a;
+  --color-surface: #1e293b;
+  --color-surface-alt: #334155;
+  --color-border: #475569;
+  --color-text: #f1f5f9;
+  --color-text-muted: #94a3b8;
+  --color-primary: #f8fafc;
+  --color-primary-hover: #e2e8f0;
+  --color-accent: #60a5fa;
+  --color-accent-hover: #93c5fd;
+  --color-danger: #f87171;
+  --color-danger-hover: #fca5a5;
+  --color-success: #4ade80;
+  --color-highlight: #422006;
+  --color-leaderboard-current-bg: rgba(96, 165, 250, 0.18);
+  --color-leaderboard-current-border: #60a5fa;
+  --color-leaderboard-btn-active-bg: #60a5fa;
+  --color-leaderboard-btn-active-text: #0f172a;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
 }
 
 /* Typography */
@@ -232,9 +265,18 @@ h2 { font-size: 1.5rem; }
   border: 1px solid transparent;
 }
 .leaderboard-item--current {
-  background: var(--color-highlight);
-  border-color: var(--color-accent);
+  background: var(--color-leaderboard-current-bg);
+  border-color: var(--color-leaderboard-current-border);
   font-weight: 500;
+  color: var(--color-text);
+}
+.leaderboard-period-btn {
+  background: var(--color-surface-alt);
+  color: var(--color-text);
+}
+.leaderboard-period-btn--selected {
+  background: var(--color-leaderboard-btn-active-bg);
+  color: var(--color-leaderboard-btn-active-text);
 }
 
 /* Timer */
@@ -253,6 +295,26 @@ h2 { font-size: 1.5rem; }
   margin-bottom: 8px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+/* Error boundary fallback */
+.error-boundary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 24px;
+  text-align: center;
+}
+.error-boundary__title {
+  margin-bottom: 12px;
+  color: var(--color-danger);
+}
+.error-boundary__text {
+  margin: 0 0 20px;
+  color: var(--color-text-muted);
+  max-width: 360px;
 }
 
 @media (max-width: 768px) {

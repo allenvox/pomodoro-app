@@ -29,6 +29,7 @@ type TimerState = {
   intervals: Intervals;
   workMinutes: number;
   breakMinutes: number;
+  taskName: string;
 };
 
 type TimerContextValue = TimerState & {
@@ -38,8 +39,9 @@ type TimerContextValue = TimerState & {
   setIntervals: (v: Intervals) => void;
   setWorkMinutes: (v: number) => void;
   setBreakMinutes: (v: number) => void;
+  setTaskName: (v: string) => void;
   persistIntervals: (next: Intervals) => void;
-  registerCycleComplete: (cb: (params: { isWork: boolean; duration: number }) => void) => () => void;
+  registerCycleComplete: (cb: (params: { isWork: boolean; duration: number; taskName: string }) => void) => () => void;
 };
 
 const initialState: TimerState = (() => {
@@ -51,6 +53,7 @@ const initialState: TimerState = (() => {
     intervals,
     workMinutes: intervals.work,
     breakMinutes: intervals.break,
+    taskName: '',
   };
 })();
 
@@ -58,7 +61,7 @@ const TimerContext = createContext<TimerContextValue | null>(null);
 
 export function TimerProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<TimerState>(initialState);
-  const cycleCompleteRef = useRef<((params: { isWork: boolean; duration: number }) => void) | null>(null);
+  const cycleCompleteRef = useRef<((params: { isWork: boolean; duration: number; taskName: string }) => void) | null>(null);
 
   const persistIntervals = useCallback((next: Intervals) => {
     setState((s) => ({ ...s, intervals: next, workMinutes: next.work, breakMinutes: next.break }));
@@ -69,7 +72,7 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const registerCycleComplete = useCallback((cb: (params: { isWork: boolean; duration: number }) => void) => {
+  const registerCycleComplete = useCallback((cb: (params: { isWork: boolean; duration: number; taskName: string }) => void) => {
     cycleCompleteRef.current = cb;
     return () => {
       cycleCompleteRef.current = null;
@@ -94,6 +97,9 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
   const setBreakMinutes = useCallback((v: number) => {
     setState((s) => ({ ...s, breakMinutes: v }));
   }, []);
+  const setTaskName = useCallback((v: string) => {
+    setState((s) => ({ ...s, taskName: v }));
+  }, []);
 
   // Run countdown in provider so it continues when user is on another page
   React.useEffect(() => {
@@ -103,12 +109,13 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
         const next = s.timeLeft - 1;
         if (next <= 0) {
           const duration = s.isWork ? s.intervals.work * 60 : s.intervals.break * 60;
-          cycleCompleteRef.current?.({ isWork: s.isWork, duration });
+          cycleCompleteRef.current?.({ isWork: s.isWork, duration, taskName: s.taskName ?? '' });
+          const wasWork = s.isWork;
           return {
             ...s,
-            timeLeft: s.isWork ? s.intervals.break * 60 : s.intervals.work * 60,
-            isWork: !s.isWork,
-            isRunning: false,
+            timeLeft: wasWork ? s.intervals.break * 60 : s.intervals.work * 60,
+            isWork: !wasWork,
+            isRunning: wasWork,
           };
         }
         return { ...s, timeLeft: next };
@@ -125,6 +132,7 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
     setIntervals,
     setWorkMinutes,
     setBreakMinutes,
+    setTaskName,
     persistIntervals,
     registerCycleComplete,
   };
