@@ -7,8 +7,18 @@ import api from '../api/client';
 export type LeaderboardEntry = {
   userId: string;
   username: string;
+  totalSeconds: number;
   sessionCount: number;
 };
+
+function formatDuration(totalSeconds: number): string {
+  if (totalSeconds < 60) return `${totalSeconds} мин`;
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  if (hours === 0) return `${minutes} мин`;
+  if (minutes === 0) return `${hours} ч`;
+  return `${hours} ч ${minutes} мин`;
+}
 
 type Period = 'all' | 'week' | 'month';
 
@@ -83,7 +93,7 @@ const Leaderboard: React.FC = () => {
                 {index + 1}. {entry.username}
                 {user?.uid === entry.userId && ' (вы)'}
               </span>
-              <span>{entry.sessionCount} сессий</span>
+              <span>{formatDuration(entry.totalSeconds)}</span>
             </li>
           ))}
         </ul>

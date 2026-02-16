@@ -24,6 +24,41 @@ router.post('/', async (req: Request, res: Response) => {
   }
 });
 
+/** Get current user by Firebase UID (for profile / nickname). */
+router.get('/by-uid/:uid', async (req: Request, res: Response) => {
+  const { uid } = req.params;
+  if (!uid?.trim()) return res.status(400).json({ error: 'Требуется uid' });
+  try {
+    const user = await User.findOne({ firebaseUid: uid }).select('username firebaseUid');
+    if (!user) return res.status(404).json({ error: 'Пользователь не найден' });
+    res.status(200).json({ username: user.username, firebaseUid: user.firebaseUid });
+  } catch (error) {
+    console.error('Get user error:', error);
+    res.status(500).json({ error: 'Не удалось загрузить пользователя' });
+  }
+});
+
+/** Update nickname (username) for leaderboard. */
+router.patch('/by-uid/:uid', async (req: Request, res: Response) => {
+  const { uid } = req.params;
+  const { username } = req.body;
+  if (!uid?.trim()) return res.status(400).json({ error: 'Требуется uid' });
+  const name = typeof username === 'string' ? username.trim() : '';
+  if (!name || name.length > 50) return res.status(400).json({ error: 'Никнейм от 1 до 50 символов' });
+  try {
+    const user = await User.findOneAndUpdate(
+      { firebaseUid: uid },
+      { username: name },
+      { new: true, runValidators: true }
+    ).select('username firebaseUid');
+    if (!user) return res.status(404).json({ error: 'Пользователь не найден' });
+    res.status(200).json({ username: user.username, firebaseUid: user.firebaseUid });
+  } catch (error) {
+    console.error('Update user error:', error);
+    res.status(500).json({ error: 'Не удалось обновить никнейм' });
+  }
+});
+
 router.post('/:userId/friends', async (req: Request, res: Response) => {
   const { userId } = req.params;
   const { friendId } = req.body;

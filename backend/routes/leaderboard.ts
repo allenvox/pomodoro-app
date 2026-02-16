@@ -1,4 +1,4 @@
-/** Leaderboard: users sorted by session count; optional period filter (week/month/all). */
+/** Leaderboard: users sorted by total work time (sum of session durations); optional period filter. */
 import { Router, Request, Response } from 'express';
 import { User } from '../models/User';
 import { Session } from '../models/Session';
@@ -27,18 +27,20 @@ router.get('/', async (req: Request, res: Response) => {
     const sessionFilter = from ? { date: { $gte: from } } : {};
     const leaderboard = await Promise.all(
       users.map(async (user) => {
-        const count = await Session.countDocuments({
-          userId: user.firebaseUid,
-          ...sessionFilter,
-        });
+        const sessions = await Session.find(
+          { userId: user.firebaseUid, ...sessionFilter },
+          { duration: 1 }
+        );
+        const totalSeconds = sessions.reduce((sum, s) => sum + (s.duration ?? 0), 0);
         return {
           userId: user.firebaseUid,
           username: user.username,
-          sessionCount: count,
+          totalSeconds,
+          sessionCount: sessions.length,
         };
       })
     );
-    const sorted = leaderboard.sort((a, b) => b.sessionCount - a.sessionCount);
+    const sorted = leaderboard.sort((a, b) => b.totalSeconds - a.totalSeconds);
     res.status(200).send(sorted);
   } catch (error) {
     console.error('Leaderboard error:', error);
